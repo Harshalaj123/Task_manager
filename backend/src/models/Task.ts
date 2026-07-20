@@ -1,22 +1,34 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model, Document } from 'mongoose';
 
-const taskSchema = new Schema({
-  title: { type: String, required: true, trim: true },
-  description: { type: String, trim: true },
-  status: { 
-    type: String, 
-    enum: ['PENDING', 'IN_PROGRESS', 'COMPLETED'], 
-    default: 'PENDING' 
+export interface ITask extends Document {
+  user: Schema.Types.ObjectId;
+  title: string;
+  description?: string;
+  isCompleted: boolean;
+  createdAt: Date;
+}
+
+const TaskSchema = new Schema<ITask>({
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
   },
-  priority: { 
-    type: String, 
-    enum: ['LOW', 'MEDIUM', 'HIGH'], 
-    default: 'MEDIUM' 
+  title: {
+    type: String,
+    required: [true, 'Please add a task title'],
+    trim: true
   },
-  dueDate: { type: Date },
-  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true } // Connects the task to a specific user
+  description: {
+    type: String,
+    trim: true
+  },
+  isCompleted: {
+    type: Boolean,
+    default: false
+  },
 }, {
   timestamps: true
 });
 
-export const Task = model('Task', taskSchema);
+export default model<ITask>('Task', TaskSchema);
