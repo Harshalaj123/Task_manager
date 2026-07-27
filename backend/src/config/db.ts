@@ -1,12 +1,13 @@
 import mongoose from 'mongoose';
 
-export const connectDB = async () => {
+export const connectDB = async (): Promise<void> => {
   try {
-    // Falls back to a local database named 'taskmanager' if no environment variable is set
-    const conn = await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/taskmanager');
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/taskmanager';
+    const conn = await mongoose.connect(mongoUri);
+    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
-    console.error(`Database connection error: ${error}`);
-    process.exit(1);
+    console.error(`❌ Database connection error: ${(error as Error).message}`);
+    // Do not hard exit if we want backend dev process to remain restartable
+    // process.exit(1);
   }
 };

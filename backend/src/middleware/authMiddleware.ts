@@ -1,28 +1,45 @@
-import express from 'express';
-import dotenv from 'dotenv';
-import { connectDB } from './config/db';
-import taskRoutes from './routes/taskRoutes';
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import User from '../models/user';
 
-// Load environment variables
-dotenv.config();
+export interface AuthRequest extends Request {
+  user?: any;
+}
 
-const app = express();
-const PORT = process.env.PORT || 5000;
+export const protect = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  let token: string | undefined;
 
-// Middleware to parse incoming JSON requests
-app.use(express.json());
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    try {
+      token = req.headers.authorization.split(' ')[1];
+      const secret = process.env.JWT_SECRET || 'supersecret_taskmanager_jwt_key_2026_safe';
+      const decoded: any = jwt.verify(token, secret);
 
-// Connect to MongoDB
-connectDB();
+      const user = await User.findById(decoded.id).select('-password');
+      if (!user) {
+        res.status(401).json({ message: 'Not authorized, user not found' });
+        return;
+      }
 
-// API Routes
-app.use('/api/tasks', taskRoutes);
+      req.user = user;
+      next();
+      return;
+    } catch (error) {
+      console.error('JWT verification error:', error);
+      res.status(401).json({ message: 'Not authorized, token failed' });
+      return;
+    }
+  }
 
-// Simple health check route
-app.get('/', (req, res) => {
-  res.send('Task Manager API is running...');
-});
-
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+  if (!token) {
+    res.status(401).json({ message: 'Not authorized, no token provided' });
+    return;
+  }
+};

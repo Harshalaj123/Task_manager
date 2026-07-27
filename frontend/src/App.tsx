@@ -1,107 +1,251 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useState, useEffect, useMemo } from 'react';
+import type { Task, User, TaskStats, TaskFilterState } from './types';
+import { taskApi, authApi } from './services/api';
+import { Navbar } from './components/Navbar';
+import { StatsOverview } from './components/StatsOverview';
+import { TaskFilterBar } from './components/TaskFilterBar';
+import { TaskCard } from './components/TaskCard';
+import { TaskModal } from './components/TaskModal';
+import { AuthModal } from './components/AuthModal';
 
-interface Task {
-  _id: string;
-  title: string;
-  description?: string;
-  completed?: boolean;
-}
-
-function App() {
+export function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [newTask, setNewTask] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [stats, setStats] = useState<TaskStats>({ total: 0, pending: 0, inProgress: 0, completed: 0 });
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
 
-  // Fetch all tasks from backend
-  const fetchTasks = async () => {
-    try {
-      const res = await axios.get('http://localhost:5000/api/tasks');
-      if (Array.isArray(res.data)) {
-        setTasks(res.data);
-      }
-    } catch (err) {
-      console.error('Error fetching tasks:', err);
-    }
-  };
+  // Quick Task Input
+  const [quickTitle, setQuickTitle] = useState('');
+  const [quickLoading, setQuickLoading] = useState(false);
+
+  // Filters State
+  const [filters, setFilters] = useState<TaskFilterState>({
+    search: '',
+    status: 'all',
+    priority: 'all',
+    category: 'all',
+    sortBy: 'createdAt',
+    sortOrder: 'desc',
+  });
+
+  // Modals state
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   useEffect(() => {
-    fetchTasks();
+    const init = async () => {
+      const stored = localStorage.getItem('tm_local_tasks');
+      if (stored && stored.includes('mock-1')) {
+        localStorage.removeItem('tm_local_tasks');
+      }
+      const currentUser = await authApi.getMe();
+      setUser(currentUser);
+      await loadTasks();
+    };
+    init();
   }, []);
 
-  // Add new task
-  const addTask = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTask.trim() || loading) return;
+  useEffect(() => {
+    if (theme === 'light') {
+      document.body.classList.add('light');
+    } else {
+      document.body.classList.remove('light');
+    }
+  }, [theme]);
 
+  const loadTasks = async () => {
     setLoading(true);
     try {
-      const res = await axios.post('http://localhost:5000/api/tasks', { 
-        title: newTask,
-        description: 'New Task' 
-      });
-      // Append the newly saved task directly from backend response
-      setTasks((prevTasks) => [...prevTasks, res.data]);
-      setNewTask('');
-    } catch (err: any) {
-      console.error('Error adding task:', err);
-      alert(`Error: ${err.response?.data?.message || err.message}`);
+      const data = await taskApi.getTasks(filters);
+      setTasks(data);
+      const currentStats = await taskApi.getStats();
+      setStats(currentStats);
+    } catch (err) {
+      console.error('Error loading tasks:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Delete task
-  const deleteTask = async (id: string) => {
+  useEffect(() => {
+    loadTasks();
+  }, [filters]);
+
+  const handleFilterChange = (newFilters: Partial<TaskFilterState>) => {
+    setFilters((prev) => ({ ...prev, ...newFilters }));
+  };
+
+  const handleToggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
+
+  // Quick Add Task
+  const handleQuickAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quickTitle.trim() || quickLoading) return;
+
+    setQuickLoading(true);
     try {
-      await axios.delete(`http://localhost:5000/api/tasks/${id}`);
-      setTasks((prevTasks) => prevTasks.filter((t) => t._id !== id));
+      await taskApi.createTask({
+        title: quickTitle.trim(),
+        priority: 'medium',
+        status: 'pending',
+        category: 'General',
+        isCompleted: false,
+      });
+      setQuickTitle('');
+      await loadTasks();
+    } catch (err) {
+      console.error('Error quick adding task:', err);
+    } finally {
+      setQuickLoading(false);
+    }
+  };
+
+  // Task Actions
+  const handleToggleStatus = async (id: string) => {
+    try {
+      await taskApi.toggleTask(id);
+      await loadTasks();
+    } catch (err) {
+      console.error('Error toggling status:', err);
+    }
+  };
+
+  const handleDeleteTask = async (id: string) => {
+    if (!window.confirm('Delete this task?')) return;
+    try {
+      await taskApi.deleteTask(id);
+      await loadTasks();
     } catch (err) {
       console.error('Error deleting task:', err);
     }
   };
 
+  const handleSaveTask = async (taskData: Omit<Task, '_id'> & { _id?: string }) => {
+    if (taskData._id) {
+      await taskApi.updateTask(taskData._id, taskData);
+    } else {
+      await taskApi.createTask(taskData);
+    }
+    await loadTasks();
+  };
+
+  const handleOpenCreateModal = () => {
+    setEditingTask(null);
+    setIsTaskModalOpen(true);
+  };
+
+  const handleOpenEditModal = (task: Task) => {
+    setEditingTask(task);
+    setIsTaskModalOpen(true);
+  };
+
+  const handleLogout = () => {
+    authApi.logout();
+    setUser(null);
+    loadTasks();
+  };
+
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    tasks.forEach((t) => {
+      if (t.category) set.add(t.category);
+    });
+    return Array.from(set);
+  }, [tasks]);
+
   return (
-    <div style={{ maxWidth: '500px', margin: '60px auto', padding: '25px', fontFamily: 'sans-serif', border: '1px solid #ccc', borderRadius: '8px' }}>
-      <h1 style={{ textAlign: 'center', color: '#2c3e50' }}>Task Manager</h1>
+    <div className="min-h-screen bg-slate-950 dark:bg-slate-950 light:bg-slate-50 text-slate-100 dark:text-slate-100 light:text-slate-900 transition-colors">
+      {/* Header */}
+      <Navbar
+        user={user}
+        theme={theme}
+        onToggleTheme={handleToggleTheme}
+        onOpenAuth={() => setIsAuthModalOpen(true)}
+        onLogout={handleLogout}
+        onOpenCreateModal={handleOpenCreateModal}
+      />
 
-      <form onSubmit={addTask} style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-        <input
-          type="text"
-          placeholder="What needs to be done?"
-          value={newTask}
-          onChange={(e) => setNewTask(e.target.value)}
-          style={{ flex: 1, padding: '10px', border: '1px solid #ccc', borderRadius: '4px' }}
+      {/* Main Container */}
+      <main className="max-w-3xl mx-auto px-4 py-6">
+        {/* Quick Add Bar */}
+        <form onSubmit={handleQuickAdd} className="mb-5 flex gap-2">
+          <input
+            type="text"
+            placeholder="Add a new task... (press Enter)"
+            value={quickTitle}
+            onChange={(e) => setQuickTitle(e.target.value)}
+            className="flex-1 px-4 py-2.5 bg-slate-900 dark:bg-slate-900 light:bg-white text-slate-100 dark:text-slate-100 light:text-slate-900 border border-slate-800 dark:border-slate-800 light:border-slate-300 rounded-xl text-xs focus:outline-none focus:border-slate-600 shadow-sm"
+          />
+          <button
+            type="submit"
+            disabled={quickLoading || !quickTitle.trim()}
+            className="btn-primary px-4 py-2.5 text-xs cursor-pointer disabled:opacity-50"
+          >
+            {quickLoading ? 'Adding...' : 'Add Task'}
+          </button>
+        </form>
+
+        {/* Dashboard Stats */}
+        <StatsOverview stats={stats} />
+
+        {/* Filter Toolbar */}
+        <TaskFilterBar
+          filters={filters}
+          onFilterChange={handleFilterChange}
         />
-        <button
-          type="submit"
-          disabled={loading}
-          style={{ padding: '10px 15px', backgroundColor: '#007bff', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-        >
-          {loading ? 'Adding...' : 'Add Task'}
-        </button>
-      </form>
 
-      <ul style={{ listStyle: 'none', padding: 0 }}>
-        {tasks.length === 0 ? (
-          <p style={{ textAlign: 'center', color: '#888' }}>No tasks found. Add one above!</p>
+        {/* Task List */}
+        {loading ? (
+          <div className="py-12 text-center text-slate-400 text-xs">
+            Loading tasks...
+          </div>
+        ) : tasks.length === 0 ? (
+          <div className="card-soft p-8 text-center space-y-1.5 my-4">
+            <p className="text-xl">✨</p>
+            <h3 className="text-sm font-medium text-slate-300 dark:text-slate-300 light:text-slate-700">
+              No tasks found
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-500 light:text-slate-500">
+              Type a task above or click "+ Add Task" to create your first task!
+            </p>
+          </div>
         ) : (
-          tasks.map((task) => (
-            <li
-              key={task._id}
-              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', marginBottom: '8px', borderBottom: '1px solid #eee' }}
-            >
-              <span>{task.title}</span>
-              <button
-                onClick={() => deleteTask(task._id)}
-                style={{ padding: '4px 8px', backgroundColor: '#dc3545', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-              >
-                Delete
-              </button>
-            </li>
-          ))
+          <div className="space-y-2.5">
+            {tasks.map((task) => (
+              <TaskCard
+                key={task._id}
+                task={task}
+                onToggleStatus={handleToggleStatus}
+                onEdit={handleOpenEditModal}
+                onDelete={handleDeleteTask}
+              />
+            ))}
+          </div>
         )}
-      </ul>
+      </main>
+
+      {/* Task Modal */}
+      <TaskModal
+        isOpen={isTaskModalOpen}
+        onClose={() => setIsTaskModalOpen(false)}
+        onSave={handleSaveTask}
+        initialTask={editingTask}
+        existingCategories={categories}
+      />
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onSuccess={(u) => {
+          setUser(u);
+          loadTasks();
+        }}
+      />
     </div>
   );
 }
