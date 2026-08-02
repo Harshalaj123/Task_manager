@@ -125,8 +125,4 @@ Task_manager/
 │   └── index.html
 └── README.md
 
-## Clone the Repository
 
-```bash
-git clone https://github.com/Harshalaj123/Color_picker.git
-```
