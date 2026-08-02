@@ -125,8 +125,3 @@ Task_manager/
 │   └── index.html
 └── README.md
 
-
-## Author
-
-* **Harshala Jadhav** - *Initial Work & Development* - [Harshalaj123](https://github.com/Harshalaj123)
-
