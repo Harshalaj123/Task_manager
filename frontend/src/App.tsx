@@ -7,6 +7,9 @@ import { TaskFilterBar } from './components/TaskFilterBar';
 import { TaskCard } from './components/TaskCard';
 import { TaskModal } from './components/TaskModal';
 import { AuthModal } from './components/AuthModal';
+import { io } from 'socket.io-client';
+
+const socket = io('http://localhost:5000', { autoConnect: false });
 
 export function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -72,6 +75,35 @@ export function App() {
   useEffect(() => {
     loadTasks();
   }, [filters]);
+
+  useEffect(() => {
+    if (user) {
+      socket.connect();
+      
+      const handleTaskChange = (task: any) => {
+        const taskUserId = task.user || task.userId; // handle different payload formats
+        if (taskUserId === user._id || (task.id && task.user === user._id)) {
+          loadTasks();
+        }
+      };
+
+      socket.on('taskCreated', handleTaskChange);
+      socket.on('taskUpdated', handleTaskChange);
+      socket.on('taskDeleted', (data) => {
+        if (data.user === user._id) {
+          loadTasks();
+        }
+      });
+    } else {
+      socket.disconnect();
+    }
+
+    return () => {
+      socket.off('taskCreated');
+      socket.off('taskUpdated');
+      socket.off('taskDeleted');
+    };
+  }, [user, filters]);
 
   const handleFilterChange = (newFilters: Partial<TaskFilterState>) => {
     setFilters((prev) => ({ ...prev, ...newFilters }));

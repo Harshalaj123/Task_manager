@@ -72,8 +72,8 @@ export const createTask = async (req: AuthRequest, res: Response): Promise<void>
       dueDate: dueDate ? new Date(dueDate) : null,
       isCompleted,
     });
-
     res.status(201).json(newTask);
+    req.app.get('io')?.emit('taskCreated', newTask);
   } catch (error) {
     res.status(500).json({
       message: 'Server Error creating task',
@@ -108,6 +108,7 @@ export const updateTask = async (req: AuthRequest, res: Response): Promise<void>
     const updatedTask = await task.save();
 
     res.status(200).json(updatedTask);
+    req.app.get('io')?.emit('taskUpdated', updatedTask);
   } catch (error) {
     res.status(500).json({
       message: 'Server Error updating task',
@@ -135,6 +136,7 @@ export const toggleTaskStatus = async (req: AuthRequest, res: Response): Promise
 
     const updatedTask = await task.save();
     res.status(200).json(updatedTask);
+    req.app.get('io')?.emit('taskUpdated', updatedTask);
   } catch (error) {
     res.status(500).json({
       message: 'Server Error toggling task',
@@ -158,6 +160,7 @@ export const deleteTask = async (req: AuthRequest, res: Response): Promise<void>
     }
 
     res.status(200).json({ message: 'Task removed successfully', id });
+    req.app.get('io')?.emit('taskDeleted', { id, user: userId });
   } catch (error) {
     res.status(500).json({
       message: 'Server Error deleting task',
