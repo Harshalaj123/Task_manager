@@ -126,3 +126,7 @@ Task_manager/
 └── README.md
 
 
+## Author
+
+* **Harshala Jadhav** - *Initial Work & Development* - [Harshalaj123](https://github.com/Harshalaj123)
+
