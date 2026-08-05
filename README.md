@@ -167,46 +167,31 @@ Start the Frontend Application (in a new terminal)
 
 ## Author
 
-* **Harshala Jadhav** - *Full-Stack Developer* - [@Harshalaj123](https://github.com/Harshalaj123)
+* **Harshala Jadhav**
+  
+* [@Harshalaj123](https://github.com/Harshalaj123)
+
 
 ## Project Structure
 
+```text
 Task_manager/
-│
-├── backend/                             # Express & Node.js Backend Application
-│   ├── src/                             # TypeScript Source Code
-│   │   ├── config/                      # Database & Server Configurations (e.g., MongoDB connection)
-│   │   ├── controllers/                 # Business Logic & API Handlers
-│   │   │   ├── taskController.ts        # CRUD operations & logic for Tasks
-│   │   │   └── userController.ts        # User-related controller logic
-│   │   ├── middleware/                  # Custom Express Middlewares (CORS, error handling, auth)
-│   │   ├── models/                      # Mongoose Database Schemas & Models
-│   │   ├── routes/                      # REST API Endpoints (`/api/tasks`)
-│   │   └── app.ts                       # Express Application Entry Point & Route Initialization
-│   │
-│   ├── .env                             # Backend Environment Variables (MONGO_URI, PORT)
-│   ├── .eve                             # Local / Staging Environment File
-│   ├── package.json                     # Backend Dependencies & NPM Scripts
-│   ├── package-lock.json                # Locked Dependency Versions
-│   └── tsconfig.json                    # Backend TypeScript Configuration
-│
-├── frontend/                            # React + Vite Frontend Application
-│   ├── public/                          # Static Assets (favicon, images)
-│   ├── src/                             # React Source Code
-│   │   ├── App.tsx                      # Main React Component & Layout
-│   │   └── main.tsx                     # React DOM Root Mounting Entry Point
-│   │
-│   ├── index.html                       # Single Page Application HTML Entry
-│   ├── package.json                     # Frontend Dependencies & Build Scripts
-│   ├── package-lock.json                # Locked Dependency Versions
-│   ├── tsconfig.json                    # Base TypeScript Config
-│   ├── tsconfig.app.json                # React App TypeScript Config
-│   ├── tsconfig.node.json               # Vite Node Config
-│   ├── vite.config.ts                   # Vite Development & Build Config
-│   └── .oxlintrc.json                   # Linter Configuration
-│
-├── .vscode/                             # Workspace & IDE Settings
-│   └── launch.json                      # VS Code Debugger Configurations
-│
-├── .gitignore                           # Git Ignored Files & Directories
-└── README.md                            # Complete Project Documentation
+│── backend/
+│   ├── src/
+│   │   ├── config/
+│   │   ├── controllers/
+│   │   │   ├── taskController.ts
+│   │   │   └── userController.ts
+│   │   ├── middleware/
+│   │   ├── models/
+│   │   ├── routes/
+│   │   └── app.ts
+│   ├── package.json
+│   └── tsconfig.json
+│── frontend/
+│   ├── src/
+│   │   ├── App.tsx
+│   │   └── main.tsx
+│   ├── package.json
+│   └── index.html
+└── README.md
