@@ -1,2 +1,2 @@
 PORT=5000
-MONGO_URI=mongodb://localhost:27017/taskmanager
+MONGO_URI=mongodb+srv://YOUR_USERNAME:harshala6782_db_user@cluster0.d7bgrds.mongodb.net/taskmanager?retryWrites=true&w=majority
