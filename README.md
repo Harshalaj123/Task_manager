@@ -162,6 +162,7 @@ npx ts-node src/app.ts
 cd frontend
 npm install
 npm run dev
+---
 
 ## Project Structure
 
