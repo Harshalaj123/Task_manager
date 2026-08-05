@@ -142,6 +142,14 @@ This project provided hands-on experience in:
 - Dark / Light Mode Theme Toggle
 
 ---
+
+## Live Links
+
+Live Frontend App: https://task-manager-beryl-three-72.vercel.app
+
+Backend API Endpoint: https://task-manager-backend-sszl.onrender.com
+
+---
 ## Getting Started
 
 Clone the Repository
