@@ -24,7 +24,7 @@ api.interceptors.request.use(
 );
 
 // Default empty tasks array
-const initialMockTasks: Task[] = [];
+const _initialMockTasks: Task[] = [];
 
 const getLocalTasks = (): Task[] => {
   const stored = localStorage.getItem('tm_local_tasks');
