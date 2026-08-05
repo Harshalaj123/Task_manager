@@ -164,27 +164,3 @@ npm install
 npm run dev
 ---
 
-## Project Structure
-
-```text
-Task_manager/
-│── backend/
-│   ├── src/
-│   │   ├── config/
-│   │   ├── controllers/
-│   │   │   ├── taskController.ts
-│   │   │   └── userController.ts
-│   │   ├── middleware/
-│   │   ├── models/
-│   │   ├── routes/
-│   │   └── app.ts
-│   ├── package.json
-│   └── tsconfig.json
-│── frontend/
-│   ├── src/
-│   │   ├── App.tsx
-│   │   └── main.tsx
-│   ├── package.json
-│   └── index.html
-└── README.md
-
