@@ -174,24 +174,36 @@ Start the Frontend Application (in a new terminal)
 
 ## Project Structure
 
-```text
+```
 Task_manager/
-│── backend/
+│
+├── .vscode/
+│   └── launch.json
+│
+├── backend/
+│   ├── node_modules/
 │   ├── src/
-│   │   ├── config/
-│   │   ├── controllers/
-│   │   │   ├── taskController.ts
-│   │   │   └── userController.ts
-│   │   ├── middleware/
-│   │   ├── models/
-│   │   ├── routes/
-│   │   └── app.ts
+│   ├── .env
 │   ├── package.json
+│   ├── package-lock.json
 │   └── tsconfig.json
-│── frontend/
+│
+├── frontend/
+│   ├── node_modules/
+│   ├── public/
 │   ├── src/
-│   │   ├── App.tsx
-│   │   └── main.tsx
+│   ├── .gitignore
+│   ├── eslint.config.js
+│   ├── index.html
 │   ├── package.json
-│   └── index.html
+│   ├── package-lock.json
+│   ├── README.md
+│   ├── tsconfig.app.json
+│   ├── tsconfig.json
+│   ├── tsconfig.node.json
+│   └── vite.config.ts
+│
 └── README.md
+```
+
+---
