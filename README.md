@@ -142,25 +142,24 @@ This project provided hands-on experience in:
 - Dark / Light Mode Theme Toggle
 
 ---
-
 ## Getting Started
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/Harshalaj123/Task_manager.git
+Clone the Repository
 
+`git clone https://github.com/Harshalaj123/Task_manager.git`
 
-### 2. Navigate to Project Directory
-cd Task_manager
+Navigate to Project Directory
 
-### 3. Start the Backend Server
-cd backend
-npm install
-npx ts-node src/app.ts
+`cd Task_manager`
 
-### 4. Start the Frontend Application (in a new terminal)
-cd frontend
-npm install
-npm run dev
----
+Start the Backend Server
 
+`cd backend`
+`npm install`
+`npx ts-node src/app.ts`
+
+Start the Frontend Application (in a new terminal)
+
+`cd frontend`
+`npm install`
+`npm run dev`
