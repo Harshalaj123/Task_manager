@@ -169,7 +169,7 @@ Start the Frontend Application (in a new terminal)
 
 * **Harshala Jadhav**
   
-* [@Harshalaj123](https://github.com/Harshalaj123)
+* GitHub: https://github.com/Harshalaj123
 
 
 ## Project Structure
