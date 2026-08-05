@@ -97,7 +97,8 @@ const TaskSchema = new Schema<ITask>(
 // Compound index for query performance
 TaskSchema.index({ user: 1, status: 1, priority: 1, dueDate: 1 });
 
-TaskSchema.pre('save', function (next) {
+// Fixed synchronous pre-save hook for Mongoose TypeScript compatibility
+TaskSchema.pre('save', function () {
   if (this.isModified('isCompleted')) {
     if (this.isCompleted && this.status !== 'completed') {
       this.status = 'completed';
@@ -107,7 +108,6 @@ TaskSchema.pre('save', function (next) {
   } else if (this.isModified('status')) {
     this.isCompleted = this.status === 'completed';
   }
-  next();
 });
 
 export default model<ITask>('Task', TaskSchema);
